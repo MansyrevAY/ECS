@@ -3,7 +3,7 @@
     public struct Entity
     {
         public readonly ulong Id;
-        public ulong ComponentMask;
+        public ulong ComponentMask { get; private set; }
 
         public Entity(ulong id)
         {
@@ -11,14 +11,14 @@
             ComponentMask = 0;
         }
 
-        public void AddComponent(Component component)
+        public void AddComponent(IComponent component)
         {
-            ComponentMask |= component.Id;
+            ComponentMask |= component.Signature;
         }
 
-        public void RemoveComponent(Entity component)
+        public void RemoveComponent(IComponent component)
         {
-            ComponentMask &= ~component.Id;
+            ComponentMask &= ~component.Signature;
         }
     }
 }
