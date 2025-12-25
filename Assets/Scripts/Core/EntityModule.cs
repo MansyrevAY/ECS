@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Core.ComponentPool;
 using Unity.Burst.Intrinsics;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ namespace Core
         private readonly Dictionary<Type, ulong> _registeredSignatures = new();
         private readonly Dictionary<ulong, Type> _registeredComponents = new();
         
-        private readonly IComponent[] _components;
+        private readonly IComponent[] _componentsArray;
 
         private ulong _nextComponentId;
 
@@ -29,7 +30,7 @@ namespace Core
             var maxComponents = maxEntities * maxComponentSignatures;
             _systems = new ContinuousArray<ISystem>(maxSystems);
             
-            _components = new IComponent[maxComponents];
+            _componentsArray = new IComponent[maxComponents];
 
             ulong freeEntity = 0;
             for (var i = 0; i < maxEntities; i++)
@@ -88,12 +89,12 @@ namespace Core
         public void AddComponent<T>(ref Entity entity, out ulong componentId) where T : struct, IComponent
         {
             componentId = _freeComponents.Pop();
-            _components[componentId] = Activator.CreateInstance<T>();
-            _components[componentId].SetSignature(_registeredSignatures[typeof(T)]);
-            _components[componentId].Id = componentId;
+            _componentsArray[componentId] = default(T);
+            _componentsArray[componentId].SetSignature(_registeredSignatures[typeof(T)]);
+            _componentsArray[componentId].Id = componentId;
             
             _entityToComponentMap[entity.Id].Add(componentId);
-            entity.AddComponent(_components[componentId]);
+            entity.AddComponent(_componentsArray[componentId]);
         }
 
         public bool HasComponent<T>(ref Entity entity) where T : struct, IComponent
@@ -105,8 +106,8 @@ namespace Core
 
         public void RemoveComponent(ref Entity entity, ulong componentId)
         {
-            entity.RemoveComponent(_components[componentId]);
-            _components[componentId] = null;
+            entity.RemoveComponent(_componentsArray[componentId]);
+            _componentsArray[componentId] = null;
             _entityToComponentMap[entity.Id].Remove(componentId);
             _freeComponents.Push(componentId);
         }
@@ -132,7 +133,7 @@ namespace Core
 
                     foreach (var componentId in _entityToComponentMap[_entities[i].Id])
                     {
-                        if ((_components[componentId].Signature & system.ComponentMask) > 0)
+                        if ((_componentsArray[componentId].Signature & system.ComponentMask) > 0)
                         {
                             componentIds.Add(componentId);
                         }
@@ -145,7 +146,7 @@ namespace Core
 
         public T GetComponent<T>(ulong id) where T : IComponent
         {
-            return (T)_components[id];
+            return (T)_componentsArray[id];
         }
     }
 }

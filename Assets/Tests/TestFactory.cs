@@ -1,4 +1,5 @@
 ﻿using Core;
+using Core.ComponentPool;
 
 namespace Tests
 {
@@ -7,6 +8,11 @@ namespace Tests
         public EntityModule CreateEntityModule()
         {
             return new EntityModule(1000, 1000, 1000);
+        }
+
+        public ComponentStorage CreateComponentStorage()
+        {
+            return new ComponentStorage(20);
         }
     }
 }

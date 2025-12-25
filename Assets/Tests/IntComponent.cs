@@ -2,11 +2,13 @@
 
 namespace Tests
 {
-    public struct TestComponent : IComponent
+    public struct IntComponent : IComponent
     {
         public ulong Signature { get; private set; }
 
         public ulong Id { get; set; }
+        
+        public int Value { get; set; }
             
         public void SetSignature(ulong signature)
         {

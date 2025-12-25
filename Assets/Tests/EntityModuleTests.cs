@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 namespace Tests
 {
-    public class ECSTests
+    public class EntityModuleTests
     {
         private TestFactory _factory;
         
@@ -55,7 +55,7 @@ namespace Tests
         public void Component_Type_Is_Registered_Test()
         {
             var module = _factory.CreateEntityModule();
-            module.RegisterComponent<TestComponent>();
+            module.RegisterComponent<EmptyComponent>();
         }
 
         [Test]
@@ -63,11 +63,11 @@ namespace Tests
         {
             var module = _factory.CreateEntityModule();
             var entity = module.CreateEntity();
-            module.RegisterComponent<TestComponent>();
+            module.RegisterComponent<EmptyComponent>();
             
-            module.AddComponent<TestComponent>(ref entity, out _);
+            module.AddComponent<EmptyComponent>(ref entity, out _);
             
-            Assert.IsTrue(module.HasComponent<TestComponent>(ref entity));
+            Assert.IsTrue(module.HasComponent<EmptyComponent>(ref entity));
         }
 
         [Test]
@@ -75,9 +75,9 @@ namespace Tests
         {
             var module = _factory.CreateEntityModule();
             var entity = module.CreateEntity();
-            module.RegisterComponent<TestComponent>();
+            module.RegisterComponent<EmptyComponent>();
             
-            Assert.IsFalse(module.HasComponent<TestComponent>(ref entity));
+            Assert.IsFalse(module.HasComponent<EmptyComponent>(ref entity));
         }
 
         [Test]
@@ -85,13 +85,13 @@ namespace Tests
         {
             var module = _factory.CreateEntityModule();
             var entity = module.CreateEntity();
-            module.RegisterComponent<TestComponent>();
+            module.RegisterComponent<EmptyComponent>();
             
-            module.AddComponent<TestComponent>(ref entity, out var id);
+            module.AddComponent<EmptyComponent>(ref entity, out var id);
             
             module.RemoveComponent(ref entity, id);
             
-            Assert.IsFalse(module.HasComponent<TestComponent>(ref entity));
+            Assert.IsFalse(module.HasComponent<EmptyComponent>(ref entity));
         }
     }
 }
