@@ -39,11 +39,9 @@ namespace Core
                 _entityToComponentMap.Add(freeEntity, new ContinuousArray<ulong>(maxComponents));
             }
             
-            ulong freeSignatures = 0;
             for (var i = 0; i < maxComponentSignatures; i++)
             {
-                _freeComponentSignatures.Push(freeSignatures);
-                freeSignatures++;
+                _freeComponentSignatures.Push(1UL << i);
             }
             
             ulong freeComponents = 0;
