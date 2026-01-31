@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Core;
 using NUnit.Framework;
@@ -52,6 +53,19 @@ namespace Tests
         }
 
         [Test]
+        public void ReleaseEntity_Releases_Components_Test()
+        {
+            var module = _factory.CreateEntityModule();
+            var entity = module.CreateEntity();
+            module.RegisterComponent<EmptyComponent>();
+            
+            module.AddComponent<EmptyComponent>(ref entity);
+            module.ReleaseEntity(ref entity);
+            
+            Assert.Throws<Exception>(() => module.GetComponent<EmptyComponent>(ref entity));
+        }
+
+        [Test]
         public void Component_Type_Is_Registered_Test()
         {
             var module = _factory.CreateEntityModule();
@@ -65,7 +79,7 @@ namespace Tests
             var entity = module.CreateEntity();
             module.RegisterComponent<EmptyComponent>();
             
-            module.AddComponent<EmptyComponent>(ref entity, out _);
+            module.AddComponent<EmptyComponent>(ref entity);
             
             Assert.IsTrue(module.HasComponent<EmptyComponent>(ref entity));
         }
@@ -87,9 +101,9 @@ namespace Tests
             var entity = module.CreateEntity();
             module.RegisterComponent<EmptyComponent>();
             
-            module.AddComponent<EmptyComponent>(ref entity, out var id);
+            var component = module.AddComponent<EmptyComponent>(ref entity);
             
-            module.RemoveComponent(ref entity, id);
+            module.RemoveComponent(ref entity, ref component);
             
             Assert.IsFalse(module.HasComponent<EmptyComponent>(ref entity));
         }

@@ -14,7 +14,7 @@ namespace Core.ComponentPool
             _maxEntityAmount = maxEntityAmount;
         }
 
-        public void Add<T>(T component, Entity entity) where T : struct, IComponent
+        public void Add<T>(T component, ref Entity entity) where T : struct, IComponent
         {
             if (!_componentPools.ContainsKey(typeof(T)))
             {
@@ -27,7 +27,7 @@ namespace Core.ComponentPool
             pool.Has[entity.Id] = true;
         }
 
-        public bool Has<T>(Entity entity) where T : struct, IComponent
+        public bool Has<T>(ref Entity entity) where T : struct, IComponent
         {
             if (!_componentPools.ContainsKey(typeof(T)))
             {
@@ -38,7 +38,7 @@ namespace Core.ComponentPool
             return pool.Has[entity.Id];
         }
 
-        public ref T Get<T>(Entity entity) where T : struct, IComponent
+        public ref T Get<T>(ref Entity entity) where T : struct, IComponent
         {
             if (!_componentPools.ContainsKey(typeof(T)))
             {
@@ -53,6 +53,18 @@ namespace Core.ComponentPool
             }
             
             return ref pool.Items[entity.Id];
+        }
+
+        public void Remove<T>(ref Entity entity) where T : struct, IComponent
+        {
+            if (!Has<T>(ref entity))
+            {
+                return;
+            }
+            
+            var pool = _componentPools[typeof(T)] as ComponentPool<T>;
+            
+            pool.Has[entity.Id] = false;
         }
     }
 }

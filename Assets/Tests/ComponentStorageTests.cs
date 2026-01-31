@@ -20,7 +20,7 @@ namespace Tests
             var entity = new Entity(0);
             var component = new EmptyComponent();
             
-            storage.Add(component, entity);
+            storage.Add(component, ref entity);
         }
 
         [Test]
@@ -30,9 +30,9 @@ namespace Tests
             var entity = new Entity(0);
             var component = new EmptyComponent();
             
-            storage.Add(component, entity);
+            storage.Add(component, ref entity);
 
-            var hasComponent = storage.Has<EmptyComponent>(entity);
+            var hasComponent = storage.Has<EmptyComponent>(ref entity);
             
             Assert.IsTrue(hasComponent);
         }
@@ -43,7 +43,7 @@ namespace Tests
             var storage = _factory.CreateComponentStorage();
             var entity = new Entity(0);
 
-            var hasComponent = storage.Has<EmptyComponent>(entity);
+            var hasComponent = storage.Has<EmptyComponent>(ref entity);
             
             Assert.IsFalse(hasComponent);
         }
@@ -55,9 +55,9 @@ namespace Tests
             var entity = new Entity(0);
             var component = new EmptyComponent();
             
-            storage.Add(component, entity);
+            storage.Add(component, ref entity);
 
-            var hasComponent = storage.Has<IntComponent>(entity);
+            var hasComponent = storage.Has<IntComponent>(ref entity);
             
             Assert.IsFalse(hasComponent);
         }
@@ -69,9 +69,9 @@ namespace Tests
             var entity = new Entity(0);
             var component = new EmptyComponent();
             
-            storage.Add(component, entity);
+            storage.Add(component, ref entity);
             
-            var receivedComponent = storage.Get<EmptyComponent>(entity);
+            var receivedComponent = storage.Get<EmptyComponent>(ref entity);
             
             Assert.AreEqual(component, receivedComponent);
         }

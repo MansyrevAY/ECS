@@ -2,6 +2,6 @@
 {
     public interface IComponentProvider
     {
-        T GetComponent<T>(ulong id) where T : IComponent;
+        T GetComponent<T>(ref Entity entity) where T : struct, IComponent;
     }
 }

@@ -17,7 +17,7 @@ namespace Core
         private readonly Dictionary<Type, ulong> _registeredSignatures = new();
         private readonly Dictionary<ulong, Type> _registeredComponents = new();
         
-        private readonly IComponent[] _componentsArray;
+        private readonly ComponentStorage _componentStorage;
 
         private ulong _nextComponentId;
 
@@ -29,8 +29,7 @@ namespace Core
             _entityToComponentMap = new Dictionary<ulong, ContinuousArray<ulong>>();
             var maxComponents = maxEntities * maxComponentSignatures;
             _systems = new ContinuousArray<ISystem>(maxSystems);
-            
-            _componentsArray = new IComponent[maxComponents];
+            _componentStorage = new ComponentStorage(maxEntities);
 
             ulong freeEntity = 0;
             for (var i = 0; i < maxEntities; i++)
@@ -85,16 +84,19 @@ namespace Core
             _registeredSignatures[type] = _freeComponentSignatures.Pop();
             _registeredComponents[_registeredSignatures[type]] = type;
         }
-
-        public void AddComponent<T>(ref Entity entity, out ulong componentId) where T : struct, IComponent
+        
+        public ref T AddComponent<T>(ref Entity entity) where T : struct, IComponent
         {
-            componentId = _freeComponents.Pop();
-            _componentsArray[componentId] = default(T);
-            _componentsArray[componentId].SetSignature(_registeredSignatures[typeof(T)]);
-            _componentsArray[componentId].Id = componentId;
+            var componentId = _freeComponents.Pop();
+            T component = default;
+            component.SetSignature(_registeredSignatures[typeof(T)]);
+            component.Id = componentId;
+            _componentStorage.Add(component, ref entity);
             
             _entityToComponentMap[entity.Id].Add(componentId);
-            entity.AddComponent(_componentsArray[componentId]);
+            entity.AddComponent(component);
+            
+            return ref _componentStorage.Get<T>(ref entity);
         }
 
         public bool HasComponent<T>(ref Entity entity) where T : struct, IComponent
@@ -104,12 +106,11 @@ namespace Core
             return (entity.ComponentMask & componentSignature) > 0;
         }
 
-        public void RemoveComponent(ref Entity entity, ulong componentId)
+        public void RemoveComponent<T>(ref Entity entity, ref T component) where T : struct, IComponent
         {
-            entity.RemoveComponent(_componentsArray[componentId]);
-            _componentsArray[componentId] = null;
-            _entityToComponentMap[entity.Id].Remove(componentId);
-            _freeComponents.Push(componentId);
+            entity.RemoveComponent(component);
+            _componentStorage.Remove<T>(ref entity);
+            _freeComponents.Push(component.Id);
         }
 
         public void AddSystem(ISystem system)
@@ -124,29 +125,29 @@ namespace Core
 
         public void Update()
         {
-            foreach (var system in _systems)
-            {
-                for (var i = 0; i < _entities.Length; i++)
-                {
-                    var componentCount = X86.Popcnt.popcnt_u64(_entities[i].ComponentMask);
-                    var componentIds = new ContinuousArray<ulong>(componentCount);
-
-                    foreach (var componentId in _entityToComponentMap[_entities[i].Id])
-                    {
-                        if ((_componentsArray[componentId].Signature & system.ComponentMask) > 0)
-                        {
-                            componentIds.Add(componentId);
-                        }
-                    }
-
-                    system.Update(ref _entities[i], this, componentIds);
-                }
-            }
+            // foreach (var system in _systems)
+            // {
+            //     for (var i = 0; i < _entities.Length; i++)
+            //     {
+            //         var componentCount = X86.Popcnt.popcnt_u64(_entities[i].ComponentMask);
+            //         var componentIds = new ContinuousArray<ulong>(componentCount);
+            //
+            //         foreach (var componentId in _entityToComponentMap[_entities[i].Id])
+            //         {
+            //             if ((_componentsArray[componentId].Signature & system.ComponentMask) > 0)
+            //             {
+            //                 componentIds.Add(componentId);
+            //             }
+            //         }
+            //
+            //         system.Update(ref _entities[i], this, componentIds);
+            //     }
+            // }
         }
 
-        public T GetComponent<T>(ulong id) where T : IComponent
+        public T GetComponent<T>(ref Entity entity) where T : struct, IComponent
         {
-            return (T)_componentsArray[id];
+            return _componentStorage.Get<T>(ref entity);
         }
     }
 }
